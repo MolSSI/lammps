@@ -48,6 +48,7 @@
 #include "version.h"
 #include "memory.h"
 #include "error.h"
+#include "mdi.h"
 
 #include <cctype>
 #include <cmath>
@@ -110,6 +111,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   modify(nullptr), group(nullptr), output(nullptr), timer(nullptr), kokkos(nullptr),
   atomKK(nullptr), memoryKK(nullptr), python(nullptr), citeme(nullptr)
 {
+
   memory = new Memory(this);
   error = new Error(this);
   universe = new Universe(this,communicator);
@@ -159,6 +161,17 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
     universe = new Universe(this,communicator);
   }
 
+  // parse mdi command
+
+  iarg = 1;
+  if (narg-iarg >= 2 && (strcmp(arg[iarg],"-mdi") == 0 ) {
+    if ( MDI_Init(arg[iarg+1], &communicator) != 0)
+      error->universe_all(FLERR,"Unable to initialize MDI");
+    delete universe;
+    universe = new Universe(this,communicator);
+    iarg += 2;
+  }
+
   // parse input switches
 
   int inflag = 0;
@@ -190,7 +203,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   int *pfirst = nullptr;
   int *plast = nullptr;
 
-  iarg = 1;
   while (iarg < narg) {
 
     if (strcmp(arg[iarg],"-cite") == 0 ||
