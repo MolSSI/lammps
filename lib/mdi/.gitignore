@@ -59,3 +59,9 @@ dkms.conf
 
 # pip
 *.egg-info
+
+# MDI files
+MDI_Library/
+build/
+libmdi.a
+mdi.h
