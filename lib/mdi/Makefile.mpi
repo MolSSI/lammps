@@ -18,9 +18,9 @@ EXTRAMAKE = Makefile.lammps.empty
 
 lib: 	$(OBJ)
 	mkdir -p build
-	cd build; cmake -Dlibtype=STATIC -Dlanguage=CXX -D CMAKE_C_COMPILER=mpicc -D CMAKE_CXX_COMPILER=mpicxx ..; make
+	cd build; cmake -Dlibtype=STATIC -Dlanguage=CXX -D CMAKE_C_COMPILER=mpicc -D CMAKE_CXX_COMPILER=mpicxx ../MDI_Library; make
 	cp build/MDI_Library/libmdi.a .
-	cp MDI_Library/mdi.h .
+	cp MDI_Library/MDI_Library/mdi.h .
 	@cp $(EXTRAMAKE) Makefile.lammps
 
 # ------ CLEAN ------
