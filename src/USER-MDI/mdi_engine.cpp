@@ -32,7 +32,7 @@
 #include "timer.h"
 #include "error.h"
 #include "comm.h"
-#include "fix_driver.h"
+#include "fix_mdi_engine.h"
 #include "mdi.h"
 
 #include "verlet.h"
@@ -174,10 +174,10 @@ void CommandMDIEngine::command(int narg, char **arg)
   MDI_Register_Command("@COORDS", "EXIT");
 
 
-  // identify the driver fix
+  // identify the mdi_engine fix
   for (int i = 0; i < modify->nfix; i++) {
-    if (strcmp(modify->fix[i]->style,"mdi") == 0) {
-      mdi_fix = static_cast<FixMDI*>(modify->fix[i]);
+    if (strcmp(modify->fix[i]->style,"mdi/engine") == 0) {
+      mdi_fix = static_cast<FixMDIEngine*>(modify->fix[i]);
     }
   }
 

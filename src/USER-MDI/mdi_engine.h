@@ -33,7 +33,7 @@ class CommandMDIEngine : protected Pointers {
   int mdi_optg();
 
 private:
-  class FixMDI *mdi_fix;
+  class FixMDIEngine *mdi_fix;
 };
 
 }

@@ -16,7 +16,7 @@
    MolSSI Driver Interface (MDI) support for LAMMPS
 ------------------------------------------------------------------------- */
 
-#include "fix_driver.h"
+#include "fix_mdi_engine.h"
 #include "atom.h"
 #include "domain.h"
 #include "comm.h"
@@ -49,9 +49,9 @@ using namespace FixConst;
 
 /***************************************************************
  * create class and parse arguments in LAMMPS script. Syntax:
- * fix ID group-ID driver [couple <group-ID>]
+ * fix ID group-ID mdi_engine [couple <group-ID>]
  ***************************************************************/
-FixMDI::FixMDI(LAMMPS *lmp, int narg, char **arg) :
+FixMDIEngine::FixMDIEngine(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
   id_pe(NULL), pe(NULL),
   id_ke(NULL), ke(NULL)
@@ -121,7 +121,7 @@ FixMDI::FixMDI(LAMMPS *lmp, int narg, char **arg) :
 /*********************************
  * Clean up on deleting the fix. *
  *********************************/
-FixMDI::~FixMDI()
+FixMDIEngine::~FixMDIEngine()
 {
   modify->delete_compute(id_pe);
   modify->delete_compute(id_ke);
@@ -133,7 +133,7 @@ FixMDI::~FixMDI()
 }
 
 /* ---------------------------------------------------------------------- */
-int FixMDI::setmask()
+int FixMDIEngine::setmask()
 {
   int mask = 0;
 
@@ -151,7 +151,7 @@ int FixMDI::setmask()
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::exchange_forces()
+void FixMDIEngine::exchange_forces()
 {
   double **f = atom->f;
   const int * const mask  = atom->mask;
@@ -170,7 +170,7 @@ void FixMDI::exchange_forces()
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::init()
+void FixMDIEngine::init()
 {
   // Confirm that the required computes are available
   int icompute_pe = modify->find_compute(id_pe);
@@ -189,7 +189,7 @@ void FixMDI::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::setup(int vflag)
+void FixMDIEngine::setup(int vflag)
 {
   //compute the potential energy
   potential_energy = pe->compute_scalar();
@@ -207,7 +207,7 @@ void FixMDI::setup(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::min_setup(int vflag)
+void FixMDIEngine::min_setup(int vflag)
 {
   potential_energy = pe->compute_scalar();
   kinetic_energy = ke->compute_scalar();
@@ -222,14 +222,14 @@ void FixMDI::min_setup(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::post_integrate()
+void FixMDIEngine::post_integrate()
 {
   engine_mode("@COORDS");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::pre_reverse(int eflag, int vflag)
+void FixMDIEngine::pre_reverse(int eflag, int vflag)
 {
   // calculate the energy
   potential_energy = pe->compute_scalar();
@@ -246,7 +246,7 @@ void FixMDI::pre_reverse(int eflag, int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::min_pre_force(int vflag)
+void FixMDIEngine::min_pre_force(int vflag)
 {
   // @COORDS
   engine_mode("@COORDS");
@@ -254,7 +254,7 @@ void FixMDI::min_pre_force(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::min_post_force(int vflag)
+void FixMDIEngine::min_post_force(int vflag)
 {
   // calculate the energy
   potential_energy = pe->compute_scalar();
@@ -270,7 +270,7 @@ void FixMDI::min_post_force(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixMDI::post_force(int vflag)
+void FixMDIEngine::post_force(int vflag)
 {
   if ( most_recent_init == 1 ) { // md
     // @FORCES
@@ -284,7 +284,7 @@ void FixMDI::post_force(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-char *FixMDI::engine_mode(const char *node)
+char *FixMDIEngine::engine_mode(const char *node)
 {
   /*
   if (screen)
@@ -507,7 +507,7 @@ char *FixMDI::engine_mode(const char *node)
 }
 
 
-void FixMDI::receive_coordinates(Error* error)
+void FixMDIEngine::receive_coordinates(Error* error)
 {
   double posconv;
   double angstrom_to_bohr;
@@ -553,7 +553,7 @@ void FixMDI::receive_coordinates(Error* error)
 }
 
 
-void FixMDI::send_coordinates(Error* error)
+void FixMDIEngine::send_coordinates(Error* error)
 {
   double posconv;
   double angstrom_to_bohr;
@@ -594,7 +594,7 @@ void FixMDI::send_coordinates(Error* error)
 }
 
 
-void FixMDI::send_charges(Error* error)
+void FixMDIEngine::send_charges(Error* error)
 {
   double *charges;
   double *charges_reduced;
@@ -628,7 +628,7 @@ void FixMDI::send_charges(Error* error)
 }
 
 
-void FixMDI::send_energy(Error* error)
+void FixMDIEngine::send_energy(Error* error)
 {
   double kelvin_to_hartree;
   MDI_Conversion_Factor("kelvin_energy", "hartree", &kelvin_to_hartree);
@@ -651,7 +651,7 @@ void FixMDI::send_energy(Error* error)
 }
 
 
-void FixMDI::send_pe(Error* error)
+void FixMDIEngine::send_pe(Error* error)
 {
   double kelvin_to_hartree;
   MDI_Conversion_Factor("kelvin_energy", "hartree", &kelvin_to_hartree);
@@ -670,7 +670,7 @@ void FixMDI::send_pe(Error* error)
 }
 
 
-void FixMDI::send_ke(Error* error)
+void FixMDIEngine::send_ke(Error* error)
 {
   double kelvin_to_hartree;
   MDI_Conversion_Factor("kelvin_energy", "hartree", &kelvin_to_hartree);
@@ -689,7 +689,7 @@ void FixMDI::send_ke(Error* error)
 }
 
 
-void FixMDI::send_types(Error* error)
+void FixMDIEngine::send_types(Error* error)
 {
   int * const type = atom->type;
 
@@ -701,7 +701,7 @@ void FixMDI::send_types(Error* error)
 }
 
 
-void FixMDI::send_labels(Error* error)
+void FixMDIEngine::send_labels(Error* error)
 {
   char *labels = new char[atom->natoms * MDI_LABEL_LENGTH];
   memset(labels, ' ', atom->natoms * MDI_LABEL_LENGTH);
@@ -722,7 +722,7 @@ void FixMDI::send_labels(Error* error)
 }
 
 
-void FixMDI::send_masses(Error* error)
+void FixMDIEngine::send_masses(Error* error)
 {
   double * const mass = atom->mass;
   int * const type = atom->type;
@@ -741,7 +741,7 @@ void FixMDI::send_masses(Error* error)
 }
 
 
-void FixMDI::send_forces(Error* error)
+void FixMDIEngine::send_forces(Error* error)
 {
   double angstrom_to_bohr;
   MDI_Conversion_Factor("angstrom", "bohr", &angstrom_to_bohr);
@@ -822,7 +822,7 @@ void FixMDI::send_forces(Error* error)
 }
 
 
-void FixMDI::receive_forces(Error* error)
+void FixMDIEngine::receive_forces(Error* error)
 {
   double angstrom_to_bohr;
   MDI_Conversion_Factor("angstrom", "bohr", &angstrom_to_bohr);
@@ -859,7 +859,7 @@ void FixMDI::receive_forces(Error* error)
 }
 
 
-void FixMDI::add_forces(Error* error)
+void FixMDIEngine::add_forces(Error* error)
 {
   double angstrom_to_bohr;
   MDI_Conversion_Factor("angstrom", "bohr", &angstrom_to_bohr);
@@ -896,7 +896,7 @@ void FixMDI::add_forces(Error* error)
 }
 
 
-void FixMDI::send_cell(Error* error)
+void FixMDIEngine::send_cell(Error* error)
 {
   double angstrom_to_bohr;
   MDI_Conversion_Factor("angstrom", "bohr", &angstrom_to_bohr);

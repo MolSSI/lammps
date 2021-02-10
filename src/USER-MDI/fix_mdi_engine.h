@@ -14,7 +14,7 @@
 
 #ifdef FIX_CLASS
 
-FixStyle(mdi,FixMDI)
+FixStyle(mdi/engine,FixMDIEngine)
 
 #else
 
@@ -25,10 +25,10 @@ FixStyle(mdi,FixMDI)
 
 namespace LAMMPS_NS {
 
-class FixMDI : public Fix {
+class FixMDIEngine : public Fix {
  public:
-  FixMDI(class LAMMPS *, int, char **);
-  ~FixMDI();
+  FixMDIEngine(class LAMMPS *, int, char **);
+  ~FixMDIEngine();
   int setmask();
   void init();
 

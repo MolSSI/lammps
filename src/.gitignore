@@ -388,8 +388,6 @@
 /fix_deposit.h
 /fix_dpd_energy.cpp
 /fix_dpd_energy.h
-/fix_driver.cpp
-/fix_driver.h
 /fix_efield.cpp
 /fix_efield.h
 /fix_eos_cv.cpp
@@ -446,6 +444,8 @@
 /fix_lb_viscous.h
 /fix_load_report.cpp
 /fix_load_report.h
+/fix_mdi_engine.cpp
+/fix_mdi_engine.h
 /fix_meso.cpp
 /fix_meso.h
 /fix_meso_stationary.cpp
