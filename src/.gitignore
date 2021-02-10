@@ -324,8 +324,6 @@
 /dihedral_spherical.h
 /dihedral_table.cpp
 /dihedral_table.h
-/driver.cpp
-/driver.h
 /dump_atom_gz.cpp
 /dump_atom_gz.h
 /dump_xyz_gz.cpp
@@ -630,6 +628,8 @@
 /lj_sdk_common.h
 /math_complex.h
 /math_vector.h
+/mdi_engine.cpp
+/mdi_engine.h
 /mgpt_*.cpp
 /mgpt_*.h
 /msm.cpp

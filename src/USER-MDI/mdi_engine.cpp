@@ -19,7 +19,7 @@
 #include <mpi.h>
 #include <string.h>
 #include <limits>
-#include "driver.h"
+#include "mdi_engine.h"
 #include "atom.h"
 #include "domain.h"
 #include "update.h"
@@ -41,17 +41,17 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-CommandMDI::CommandMDI(LAMMPS *lmp) : Pointers(lmp) {
+CommandMDIEngine::CommandMDIEngine(LAMMPS *lmp) : Pointers(lmp) {
   return;
 }
 
-CommandMDI::~CommandMDI() {
+CommandMDIEngine::~CommandMDIEngine() {
   return;
 }
 
 /* ---------------------------------------------------------------------- */
 
-void CommandMDI::command(int narg, char **arg)
+void CommandMDIEngine::command(int narg, char **arg)
 {
 
   // register the default node
@@ -181,8 +181,8 @@ void CommandMDI::command(int narg, char **arg)
     }
   }
 
-  /* format for MDI command:
-   * mdi
+  /* format for MDI Engine command:
+   * mdi_engine
    */
   if (narg > 0) error->all(FLERR,"Illegal MDI command");
 
@@ -229,7 +229,7 @@ void CommandMDI::command(int narg, char **arg)
 
 
 
-int CommandMDI::mdi_md()
+int CommandMDIEngine::mdi_md()
 {
   // initialize an MD simulation
   update->whichflag = 1; // 1 for dynamics
@@ -342,14 +342,14 @@ int CommandMDI::mdi_md()
 
 
 
-int CommandMDI::mdi_optg()
+int CommandMDIEngine::mdi_optg()
 {
   char *command = NULL;
 
   // create instance of the Minimizer class
   Minimize *minimizer = new Minimize(lmp);
 
-  // initialize the minimizer in a way that ensures optimization will continue until the driver exits
+  // initialize the minimizer in a way that ensures optimization will continue until MDI exits
   update->etol = std::numeric_limits<double>::min();
   update->ftol = std::numeric_limits<double>::min();
   update->nsteps = std::numeric_limits<int>::max();

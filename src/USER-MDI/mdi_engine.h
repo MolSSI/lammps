@@ -13,7 +13,7 @@
 
 #ifdef COMMAND_CLASS
 
-CommandStyle(mdi,CommandMDI)
+CommandStyle(mdi_engine,CommandMDIEngine)
 
 #else
 
@@ -24,10 +24,10 @@ CommandStyle(mdi,CommandMDI)
 
 namespace LAMMPS_NS {
 
-class CommandMDI : protected Pointers {
+class CommandMDIEngine : protected Pointers {
  public:
-  CommandMDI(class LAMMPS *);
-  virtual ~CommandMDI();
+  CommandMDIEngine(class LAMMPS *);
+  virtual ~CommandMDIEngine();
   void command(int, char **);
   int mdi_md();
   int mdi_optg();
