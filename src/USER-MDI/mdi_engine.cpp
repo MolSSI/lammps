@@ -85,6 +85,7 @@ void CommandMDIEngine::command(int narg, char **arg)
   MDI_Register_Command("@INIT_MD", ">FORCES");
   MDI_Register_Command("@INIT_MD", "@");
   MDI_Register_Command("@INIT_MD", "@COORDS");
+  MDI_Register_Command("@INIT_MD", "@DEFAULT");
   MDI_Register_Command("@INIT_MD", "@FORCES");
   MDI_Register_Command("@INIT_MD", "@PRE-FORCES");
   MDI_Register_Command("@INIT_MD", "EXIT");
@@ -106,6 +107,7 @@ void CommandMDIEngine::command(int narg, char **arg)
   MDI_Register_Command("@INIT_OPTG", ">FORCES");
   MDI_Register_Command("@INIT_OPTG", "@");
   MDI_Register_Command("@INIT_OPTG", "@COORDS");
+  MDI_Register_Command("@INIT_OPTG", "@DEFAULT");
   MDI_Register_Command("@INIT_OPTG", "@FORCES");
   MDI_Register_Command("@INIT_OPTG", "EXIT");
 
@@ -126,6 +128,7 @@ void CommandMDIEngine::command(int narg, char **arg)
   MDI_Register_Command("@PRE-FORCES", ">FORCES");
   MDI_Register_Command("@PRE-FORCES", "@");
   MDI_Register_Command("@PRE-FORCES", "@COORDS");
+  MDI_Register_Command("@PRE-FORCES", "@DEFAULT");
   MDI_Register_Command("@PRE-FORCES", "@FORCES");
   MDI_Register_Command("@PRE-FORCES", "@PRE-FORCES");
   MDI_Register_Command("@PRE-FORCES", "EXIT");
@@ -148,6 +151,7 @@ void CommandMDIEngine::command(int narg, char **arg)
   MDI_Register_Command("@FORCES", ">FORCES");
   MDI_Register_Command("@FORCES", "@");
   MDI_Register_Command("@FORCES", "@COORDS");
+  MDI_Register_Command("@FORCES", "@DEFAULT");
   MDI_Register_Command("@FORCES", "@FORCES");
   MDI_Register_Command("@FORCES", "@PRE-FORCES");
   MDI_Register_Command("@FORCES", "EXIT");
@@ -169,17 +173,21 @@ void CommandMDIEngine::command(int narg, char **arg)
   MDI_Register_Command("@COORDS", ">FORCES");
   MDI_Register_Command("@COORDS", "@");
   MDI_Register_Command("@COORDS", "@COORDS");
+  MDI_Register_Command("@COORDS", "@DEFAULT");
   MDI_Register_Command("@COORDS", "@FORCES");
   MDI_Register_Command("@COORDS", "@PRE-FORCES");
   MDI_Register_Command("@COORDS", "EXIT");
 
 
   // identify the mdi_engine fix
+  bool found_fix = false;
   for (int i = 0; i < modify->nfix; i++) {
     if (strcmp(modify->fix[i]->style,"mdi/engine") == 0) {
       mdi_fix = static_cast<FixMDIEngine*>(modify->fix[i]);
+      found_fix = true;
     }
   }
+  if (not found_fix) error->all(FLERR,"Calculations run with the mdi_engine command must include the mdi/engine fix.");
 
   /* format for MDI Engine command:
    * mdi_engine
@@ -195,17 +203,20 @@ void CommandMDIEngine::command(int narg, char **arg)
   // begin engine_mode
   char *command = NULL;
   while ( true ) {
+    // listen for MDI commands at the default command
+    // the response to most MDI commands is handled here
     command = mdi_fix->engine_mode("@DEFAULT");
 
+    // MDI commands that involve large-scale program flow are handled here
     if (strcmp(command,"@INIT_MD") == 0 ) {
-      // enter MDI simulation control loop
+      // enter MD control loop
       int received_exit = mdi_md();
       if ( received_exit == 1 ) {
 	return;
       }
     }
     if (strcmp(command,"@INIT_OPTG") == 0 ) {
-      // enter MDI simulation control loop
+      // enter minimizer control loop
       int received_exit = mdi_optg();
       if ( received_exit == 1 ) {
 	return;
@@ -215,16 +226,11 @@ void CommandMDIEngine::command(int narg, char **arg)
       return;
     }
     else {
-      error->all(FLERR,strcat("MDI received unsupported command: ",command));
+      error->all(FLERR,strcat("MDI node exited with invalid command: ",command));
     }
   }
 
-  // flush the final output
-  Finish finish(lmp);
-  finish.end(0);
-
   return;
-
 }
 
 
@@ -246,60 +252,29 @@ int CommandMDIEngine::mdi_md()
   char *command = NULL;
   command = mdi_fix->engine_mode("@INIT_MD");
 
-  // only two commands are valid at this point
-  // SHOULD PROBABLY HAVE:
-  // if ( command.scope < "GLOBAL" ) {
-  //    pass
-  // }
-  if (strcmp(command,"MD_EXIT") == 0 ) {
-    // return, but do not flag for global exit
+  if (strcmp(command,"@DEFAULT") == 0 ) {
+    // return, and flag for @DEFAULT node
     return 0;
   }
   else if (strcmp(command,"EXIT") == 0 ) {
     // return, and flag for global exit
     return 1;
   }
-  // Don't include the error until after the command.scope check is added above
-  /*
-  else {
-    error->all(FLERR,strcat("MDI received unsupported command: ",command));
-  }
-  */
-
-  // NOTE: CURRENTLY TRUSTING THAT command = @FORCES
 
   // continue the MD simulation
   update->integrate->setup(1);
 
-  //<<<<
-  double **f2 = atom->f;
-  fprintf(screen,"SSS MDI2: %f %f %f\n",f2[0][0], f2[0][1], f2[0][2]);
-  //>>>>
-
   // the MD simulation is now at the @FORCES node
   command = mdi_fix->engine_mode("@FORCES");
-  //command = mdi_fix->engine_mode(2);
-  command = mdi_fix->command;
 
-  // only two commands are valid at this point
-  // SHOULD PROBABLY HAVE:
-  // if ( command.scope < "GLOBAL" ) {
-  //    pass
-  // }
-  if (strcmp(command,"EXIT_SIM") == 0 ) {
-    // return, but do not flag for global exit
+  if (strcmp(command,"@DEFAULT") == 0 ) {
+    // return, and flag for @DEFAULT node
     return 0;
   }
   else if (strcmp(command,"EXIT") == 0 ) {
     // return, and flag for global exit
     return 1;
   }
-  // Don't include the error until after the command.scope check is added above
-  /*
-  else {
-    error->all(FLERR,strcat("MDI received unsupported command: ",command));
-  }
-  */
 
   // do MD iterations until told to exit
   while ( true ) {
@@ -316,25 +291,14 @@ int CommandMDIEngine::mdi_md()
     // get the most recent command the MDI engine received
     command = mdi_fix->command;
 
-    // only two commands are valid at this point
-    // SHOULD PROBABLY HAVE:
-    // if ( command.scope < "GLOBAL" ) {
-    //    pass
-    // }
-    if (strcmp(command,"EXIT_SIM") == 0 ) {
-      // return, but do not flag for global exit
+    if (strcmp(command,"@DEFAULT") == 0 ) {
+      // return, and flag for @DEFAULT node
       return 0;
     }
     else if (strcmp(command,"EXIT") == 0 ) {
       // return, and flag for global exit
       return 1;
     }
-    // Don't include the error until after the command.scope check is added above
-    /*
-    else {
-      error->all(FLERR,strcat("MDI received unsupported command: ",command));
-    }
-    */
 
   }
 
@@ -362,69 +326,38 @@ int CommandMDIEngine::mdi_optg()
 
   command = mdi_fix->engine_mode("@INIT_OPTG");
 
-  // only two commands are valid at this point
-  // SHOULD PROBABLY HAVE:
-  // if ( command.scope < "GLOBAL" ) {
-  //    pass
-  // }
-  if (strcmp(command,"EXIT_SIM") == 0 ) {
-    // return, but do not flag for global exit
+  if (strcmp(command,"@DEFAULT") == 0 ) {
+    // return, and flag for @DEFAULT node
     return 0;
   }
   else if (strcmp(command,"EXIT") == 0 ) {
     // return, and flag for global exit
     return 1;
   }
-  // Don't include the error until after the command.scope check is added above
-  /*
-  else {
-    error->all(FLERR,strcat("MDI received unsupported command: ",command));
-  }
-  */
 
   update->minimize->setup();
+  command = mdi_fix->command;
 
-  // only two commands are valid at this point
-  // SHOULD PROBABLY HAVE:
-  // if ( command.scope < "GLOBAL" ) {
-  //    pass
-  // }
-  if (strcmp(command,"EXIT_SIM") == 0 ) {
-    // return, but do not flag for global exit
+  if (strcmp(command,"@DEFAULT") == 0 ) {
+    // return, and flag for @DEFAULT node
     return 0;
   }
   else if (strcmp(command,"EXIT") == 0 ) {
     // return, and flag for global exit
     return 1;
   }
-  // Don't include the error until after the command.scope check is added above
-  /*
-  else {
-    error->all(FLERR,strcat("MDI received unsupported command: ",command));
-  }
-  */
 
   update->minimize->iterate(update->nsteps);
+  command = mdi_fix->command;
 
-  // only two commands are valid at this point
-  // SHOULD PROBABLY HAVE:
-  // if ( command.scope < "GLOBAL" ) {
-  //    pass
-  // }
-  if (strcmp(command,"EXIT_SIM") == 0 ) {
-    // return, but do not flag for global exit
+  if (strcmp(command,"@DEFAULT") == 0 ) {
+    // return, and flag for @DEFAULT node
     return 0;
   }
   else if (strcmp(command,"EXIT") == 0 ) {
     // return, and flag for global exit
     return 1;
   }
-  // Don't include the error until after the command.scope check is added above
-  /*
-  else {
-    error->all(FLERR,strcat("MDI received unsupported command: ",command));
-  }
-  */
 
   error->all(FLERR,strcat("MDI reached end of OPTG simulation with invalid command: ",command));
   return 0;
