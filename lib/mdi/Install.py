@@ -167,11 +167,6 @@ cmd = "make -f Makefile.auto clean; make -f Makefile.auto -j%d" % n_cpus
 txt = subprocess.check_output(cmd,shell=True,stderr=subprocess.STDOUT)
 print(txt.decode('UTF-8'))
 
-if os.path.exists("lib%s.a" % lib): print("Build was successful")
-else: error("Build of lib/%s/lib%s.a was NOT successful" % (lib,lib))
-if has_extramake and not os.path.exists("Makefile.lammps"):
-  print("lib/%s/Makefile.lammps was NOT created" % lib)
-
 # create 2 links in lib/mdi to MDI Library src dir
 
 print("Creating links to MDI Library include and lib files")
@@ -181,3 +176,8 @@ if os.path.isfile("liblink") or os.path.islink("liblink"):
   os.remove("liblink")
 os.symlink(os.path.join(homedir, 'MDI_Library'), 'includelink')
 os.symlink(os.path.join(homepath, 'build', 'MDI_Library'), 'liblink')
+
+if os.path.exists( os.path.join( homepath, "liblink", "lib%s.a" % lib) ): print("Build was successful")
+else: error("Build of lib/%s/lib%s.a was NOT successful" % (lib,lib))
+if has_extramake and not os.path.exists("Makefile.lammps"):
+  print("lib/%s/Makefile.lammps was NOT created" % lib)
