@@ -17,8 +17,8 @@ CommandStyle(mdi_engine,CommandMDIEngine)
 
 #else
 
-#ifndef LMP_COMMAND_MDI_H
-#define LMP_COMMAND_MDI_H
+#ifndef LMP_COMMAND_MDI_ENGINE_H
+#define LMP_COMMAND_MDI_ENGINE_H
 
 #include "pointers.h"
 

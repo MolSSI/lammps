@@ -18,8 +18,8 @@ FixStyle(mdi/engine,FixMDIEngine)
 
 #else
 
-#ifndef LMP_FIX_MDI_H
-#define LMP_FIX_MDI_H
+#ifndef LMP_FIX_MDI_ENGINE_H
+#define LMP_FIX_MDI_ENGINE_H
 
 #include "fix.h"
 
