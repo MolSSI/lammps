@@ -48,7 +48,7 @@
 #include "version.h"
 #include "memory.h"
 #include "error.h"
-#if defined(LMP_FIX_MDI_H)
+#if defined(LMP_USER_MDI)
 #include "mdi.h"
 #endif
 
@@ -167,7 +167,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
 
   iarg = 1;
   if (narg-iarg >= 2 && strcmp(arg[iarg],"-mdi") == 0 ) {
-#if defined(LMP_FIX_MDI_H)
+#if defined(LMP_USER_MDI)
     if ( MDI_Init(arg[iarg+1], &communicator) != 0)
       error->universe_all(FLERR,"Unable to initialize MDI");
 #else
