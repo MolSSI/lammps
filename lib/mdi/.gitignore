@@ -65,3 +65,5 @@ MDI_Library/
 build/
 libmdi.a
 mdi.h
+includelink
+liblink

@@ -833,7 +833,6 @@
 /math_vector.h
 /mdi_engine.cpp
 /mdi_engine.h
-/mdi_init.h
 /message.cpp
 /message.h
 /mgpt_*.cpp

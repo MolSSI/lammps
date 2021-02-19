@@ -180,14 +180,9 @@ void CommandMDIEngine::command(int narg, char **arg)
 
 
   // identify the mdi_engine fix
-  bool found_fix = false;
-  for (int i = 0; i < modify->nfix; i++) {
-    if (strcmp(modify->fix[i]->style,"mdi/engine") == 0) {
-      mdi_fix = static_cast<FixMDIEngine*>(modify->fix[i]);
-      found_fix = true;
-    }
-  }
-  if (not found_fix) error->all(FLERR,"Calculations run with the mdi_engine command must include the mdi/engine fix.");
+  int ifix = modify->find_fix_by_style("mdi/engine");
+  if (ifix < 0) error->all(FLERR,"The mdi_engine command requires the mdi/engine fix");
+  mdi_fix = static_cast<FixMDIEngine*>(modify->fix[ifix]);
 
   /* format for MDI Engine command:
    * mdi_engine

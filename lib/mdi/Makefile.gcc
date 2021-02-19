@@ -1,13 +1,3 @@
-# *
-# *_________________________________________________________________________*
-# *      Fortran Library for Reactive Force Field                           *
-# *      DESCRIPTION: SEE READ-ME                                           *
-# *      FILE NAME: Makefile                                                *
-# *      CONTRIBUTING AUTHORS: Hansohl Cho(MIT), Aidan Thompson(SNL)        *
-# *                            and Greg Wagner(SNL)                         * 
-# *      CONTACT: hansohl@mit.edu, athompson@sandia.gov, gjwagne@sandia.gov *
-# *_________________________________________________________________________*/
-
 SHELL = /bin/sh
 
 # which file will be copied to Makefile.lammps
@@ -19,8 +9,6 @@ EXTRAMAKE = Makefile.lammps.empty
 lib: 	$(OBJ)
 	mkdir -p build
 	cd build; cmake -Dlibtype=STATIC -Dlanguage=C -D CMAKE_C_COMPILER=gcc ../MDI_Library; make
-	cp build/MDI_Library/libmdi.a .
-	cp MDI_Library/MDI_Library/mdi.h .
 	@cp $(EXTRAMAKE) Makefile.lammps
 
 # ------ CLEAN ------
