@@ -48,7 +48,9 @@
 #include "version.h"
 #include "memory.h"
 #include "error.h"
-#include "mdi_init.h"
+#if defined(LMP_FIX_MDI_H)
+#include "mdi.h"
+#endif
 
 #include <cctype>
 #include <cmath>
@@ -165,8 +167,12 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
 
   iarg = 1;
   if (narg-iarg >= 2 && strcmp(arg[iarg],"-mdi") == 0 ) {
-    if ( init_mdi(arg[iarg+1], &communicator) != 0)
+#if defined(LMP_FIX_MDI_H)
+    if ( MDI_Init(arg[iarg+1], &communicator) != 0)
       error->universe_all(FLERR,"Unable to initialize MDI");
+#else
+    error->universe_all(FLERR, "-mdi option requires USER-MDI package");
+#endif
     delete universe;
     universe = new Universe(this,communicator);
     iarg += 2;
