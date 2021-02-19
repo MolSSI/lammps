@@ -226,7 +226,7 @@ void CommandMDIEngine::command(int narg, char **arg)
       return;
     }
     else {
-      error->all(FLERR,strcat("MDI node exited with invalid command: ",command));
+      error->all(FLERR,fmt::format("MDI node exited with invalid command: {}",command));
     }
   }
 
@@ -359,6 +359,6 @@ int CommandMDIEngine::mdi_optg()
     return 1;
   }
 
-  error->all(FLERR,strcat("MDI reached end of OPTG simulation with invalid command: ",command));
+  error->all(FLERR,fmt::format("MDI reached end of OPTG simulation with invalid command: {}",command));
   return 0;
 }
