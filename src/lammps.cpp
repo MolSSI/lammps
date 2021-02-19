@@ -164,7 +164,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   // parse mdi command
 
   iarg = 1;
-  if (narg-iarg >= 2 && (strcmp(arg[iarg],"-mdi") == 0 ) {
+  if (narg-iarg >= 2 && strcmp(arg[iarg],"-mdi") == 0 ) {
     if ( MDI_Init(arg[iarg+1], &communicator) != 0)
       error->universe_all(FLERR,"Unable to initialize MDI");
     delete universe;
